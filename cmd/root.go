@@ -8,9 +8,9 @@ import (
 )
 
 var (
-	handle   string
-	name     string
-	language string
+	username    string
+	querystring string
+	language    string
 )
 
 // rootCmd represents the base command when called without any subcommands

@@ -17,8 +17,8 @@ var searchCmd = &cobra.Command{
 }
 
 func search(cmd *cobra.Command, args []string) (err error) {
-	if handle != "" {
-		userInfo := user.GetUser(handle)
+	if username != "" {
+		userInfo := user.GetUser(username)
 		fmt.Println(`Username:	`, userInfo.Login)
 		fmt.Println(`Name:		`, userInfo.Name)
 		fmt.Println(`Bio:		`, userInfo.Bio)
@@ -34,7 +34,7 @@ func search(cmd *cobra.Command, args []string) (err error) {
 		return nil
 	} else {
 		//docker+language:go&sort=stars&order=desc
-		query := name + "language:" + language + "&sort=stars&order=desc"
+		query := querystring + "language:" + language + "&sort=stars&order=desc"
 		repos, err := repos.SearchRepos(query)
 		if err != nil {
 			return err
@@ -57,7 +57,7 @@ func search(cmd *cobra.Command, args []string) (err error) {
 
 func init() {
 	rootCmd.AddCommand(searchCmd)
-	searchCmd.Flags().StringVarP(&handle, "handle", "u", "", `user's github handle`)
-	searchCmd.Flags().StringVarP(&name, "name", "n", "", `string to search`)
+	searchCmd.Flags().StringVarP(&username, "username", "u", "", `user's github handle`)
+	searchCmd.Flags().StringVarP(&querystring, "query", "q", "", `string to search`)
 	searchCmd.Flags().StringVarP(&language, "language", "l", "", `language project written in`)
 }
