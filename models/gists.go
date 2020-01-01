@@ -13,7 +13,6 @@ type Gist struct {
 	URL         string    `json:"url"`
 	ForksURL    string    `json:"forks_url"`
 	CommitsURL  string    `json:"commits_url"`
-	ID          string    `json:"id"`
 	GitPullURL  string    `json:"git_pull_url"`
 	GitPushURL  string    `json:"git_push_url"`
 	HTMLURL     string    `json:"html_url"`

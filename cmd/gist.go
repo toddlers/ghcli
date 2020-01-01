@@ -1,11 +1,14 @@
 package cmd
 
 import (
-	"fmt"
+	"log"
+	"os"
+	"text/template"
 
 	"github.com/spf13/cobra"
 	"github.com/toddlers/ghcli/gist"
-	"github.com/toddlers/ghcli/models"
+	"github.com/toddlers/ghcli/templates"
+	"github.com/toddlers/ghcli/utils"
 )
 
 // gistCmd represents the gist command
@@ -18,21 +21,13 @@ var gistCmd = &cobra.Command{
 
 func getGists(cmd *cobra.Command, args []string) (err error) {
 	if username != "" {
+		var report = template.Must(template.New("Gist Info").Funcs(template.FuncMap{"daysAgo": utils.DaysAgo}).Parse(templates.GistInfo))
 		snippets, err := gist.GetGists(username)
 		if err != nil {
 			return err
 		}
-		for _, snippet := range snippets {
-
-			fmt.Println(`Description : `, snippet.Description)
-			fmt.Println(`Github Handle : `, snippet.Owner.Login)
-			var file models.File
-			for _, file = range snippet.Files {
-				fmt.Println(`Filename : `, file.Filename)
-				fmt.Println(`Language : `, file.Language)
-			}
-			fmt.Println(`Created At : `, snippet.CreatedAt)
-			fmt.Println("============================================================")
+		if err := report.Execute(os.Stdout, snippets); err != nil {
+			log.Fatal(err)
 		}
 	}
 	return nil
