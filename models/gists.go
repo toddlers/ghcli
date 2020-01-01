@@ -25,3 +25,14 @@ type Gist struct {
 	Owner       *Owner
 	Files       map[string]File
 }
+
+type Snippets struct {
+	Snippets []SnippetInfo
+}
+
+type SnippetInfo struct {
+	Description string
+	Command     string
+	Tag         []string
+	Output      string
+}

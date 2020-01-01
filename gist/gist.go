@@ -4,10 +4,24 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"time"
 
+	"github.com/google/go-github/github"
+	"github.com/pkg/errors"
 	"github.com/toddlers/ghcli/config"
 	"github.com/toddlers/ghcli/models"
 )
+
+type Client interface {
+	GetGist() (*Snippet, error)
+	UploadSnippet(string) error
+}
+
+// Snippet is the remote snippet
+type Snippet struct {
+	Content   string
+	UpdatedAt time.Time
+}
 
 func GetGists(username string) ([]*models.Gist, error) {
 	//https://api.github.com/users/toddlers/gists
@@ -31,4 +45,24 @@ func GetGists(username string) ([]*models.Gist, error) {
 	}
 	resp.Body.Close()
 	return result, nil
+}
+
+func GistUpload(client Client) (err error) {
+	//	var snippets models.Snippets
+	body := "this is test snippet"
+	if err = client.UploadSnippet(body); err != nil {
+		return errors.Wrap(err, "Failed to upload snippet")
+	}
+
+	gist := &github.Gist{
+		Description: github.String("description"),
+		Public: false,
+		Files: map["temp.go"]github.GistFile{
+			github.GistFilename("temp.go"): github.GistFile{
+				Content: body,
+			},
+		},
+	}
+	fmt.Println("Upload success")
+	return nil
 }
