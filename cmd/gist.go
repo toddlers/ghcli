@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -10,8 +11,10 @@ import (
 	"text/template"
 
 	"github.com/chzyer/readline"
+	"github.com/fatih/color"
 	"github.com/spf13/cobra"
 	"github.com/toddlers/ghcli/gist"
+	"github.com/toddlers/ghcli/models"
 	"github.com/toddlers/ghcli/templates"
 	"github.com/toddlers/ghcli/utils"
 )
@@ -84,7 +87,23 @@ func scan(message string) (string, error) {
 }
 
 func createGists(cmd *cobra.Command, args []string) (err error) {
+	var command string
+	var description string
 	var tags []string
+	if len(args) > 0 {
+		command = strings.Join(args, " ")
+		fmt.Fprintf(color.Output, "%s %s\n", color.YellowString("Command>"), command)
+	} else {
+		command, err = scan(color.YellowString("Command>"))
+		if err != nil {
+			return err
+		}
+	}
+
+	description, err = scan(color.GreenString("Description> "))
+	if err != nil {
+		return err
+	}
 	if Tag {
 		var t string
 		if t, err = scan("Tag> "); err != nil {
@@ -92,8 +111,21 @@ func createGists(cmd *cobra.Command, args []string) (err error) {
 		}
 		tags = strings.Fields(t)
 	}
+	newSnippet := models.SnippetInfo{
+		Description: description,
+		Command:     command,
+		Tag:         tags,
+	}
+	body, err := json.Marshal(newSnippet)
+	if err != nil {
+		return err
+	}
+	err = gist.GistUpload(string(body))
+	if err != nil {
+		return err
+	}
 	fmt.Println(tags)
-	fmt.Println("Craete Gists called")
+	fmt.Println("Create Gists called")
 	return nil
 }
 
