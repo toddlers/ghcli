@@ -18,6 +18,7 @@ Following: {{.Following}}
 {{range .}}----------------------------------------
 Description : {{.Description}}
 Github Handle: {{.Owner.Login}}
+Gist ID: {{.ID}}
 {{range .Files}}
 Filename:   {{.Filename}}
 Language:  {{.Language| printf "%.64s"}}

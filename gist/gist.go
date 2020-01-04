@@ -35,19 +35,12 @@ func GetGists(username string) ([]*models.Gist, error) {
 }
 
 func GistUpload(body string) (err error) {
-	//	var snippets models.Snippets
-	//	body := "this is test snippet"
 	client, err := models.NewGistClient()
 	if err != nil {
-		return errors.Wrap(err, "Failed to create the client")
+		return errors.Wrap(err, "Failed to initialize gist client")
 	}
 	if err = client.UploadSnippet(body); err != nil {
 		return errors.Wrap(err, "Failed to upload snippet")
 	}
-
-	if err != nil {
-		return errors.Wrap(err, "Failed to initialize gist client")
-	}
-
 	return nil
 }

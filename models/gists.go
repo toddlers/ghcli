@@ -22,6 +22,7 @@ type File struct {
 }
 type Gist struct {
 	URL         string    `json:"url"`
+	ID          string    `json:"id"`
 	ForksURL    string    `json:"forks_url"`
 	CommitsURL  string    `json:"commits_url"`
 	GitPullURL  string    `json:"git_pull_url"`
@@ -109,9 +110,8 @@ func (g GistClient) UploadSnippet(content string) error {
 			},
 		},
 	}
-	fmt.Println(g.ID)
 	if g.ID == "" {
-		gistID, err := g.CreateGist(context.Background(), gist)
+		gistID, err := g.createGist(context.Background(), gist)
 		if err != nil {
 			return err
 		}
@@ -120,7 +120,7 @@ func (g GistClient) UploadSnippet(content string) error {
 	return nil
 }
 
-func (g GistClient) CreateGist(ctx context.Context, gist *github.Gist) (gistID *string, err error) {
+func (g GistClient) createGist(ctx context.Context, gist *github.Gist) (gistID *string, err error) {
 	fmt.Println("Create Gist")
 	s := spinner.New(spinner.CharSets[14], 100*time.Millisecond)
 	s.Start()
