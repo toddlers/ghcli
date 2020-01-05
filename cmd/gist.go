@@ -31,10 +31,10 @@ var gistCreateCmd = &cobra.Command{
 	RunE:  createGists,
 }
 
-var downloadGistCmd = &cobra.Command{
-	Use:   "create",
-	Short: "create gist",
-	Long:  `create a gist`,
+var gistDownloadCmd = &cobra.Command{
+	Use:   "download",
+	Short: "download gist",
+	Long:  `download a gist`,
 	RunE:  downloadGist,
 }
 
@@ -95,11 +95,23 @@ func createGists(cmd *cobra.Command, args []string) (err error) {
 	return nil
 }
 
+func downloadGist(cmd *cobra.Command, args []string) (err error) {
+	if Gid != "" {
+		err := gist.GistDownload(Gid)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 func init() {
 	gistCmd.Flags().StringVarP(&username, "username", "u", "", "github handle")
+	gistDownloadCmd.Flags().StringVarP(&Gid, "gid", "i", "", "gist id to download")
 	gistCreateCmd.Flags().BoolVarP(&Tag, "tag", "t", false,
 		`Display tag prompt (delimiter: space)`)
 	//gistCreateCmd.Flags().StringVarP(&tag, "tag", "t", "", "tag for the gist")
 	gistCmd.AddCommand(gistCreateCmd)
+	gistCmd.AddCommand(gistDownloadCmd)
 	rootCmd.AddCommand(gistCmd)
 }

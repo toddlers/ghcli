@@ -13,6 +13,7 @@ var (
 	querystring string
 	language    string
 	Tag         bool
+	Gid         string
 )
 
 // rootCmd represents the base command when called without any subcommands
