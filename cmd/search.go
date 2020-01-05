@@ -29,17 +29,16 @@ func search(cmd *cobra.Command, args []string) (err error) {
 			log.Fatal(err)
 		}
 		return nil
-	} else {
-		//docker+language:go&sort=stars&order=desc
-		query := querystring + "language:" + language + "&sort=stars&order=desc"
-		repos, err := repos.SearchRepos(query)
-		if err != nil {
-			return err
-		}
-		var report = template.Must(template.New("Repo Info").Funcs(template.FuncMap{"daysAgo": utils.DaysAgo}).Parse(templates.RepoInfo))
-		if err := report.Execute(os.Stdout, repos); err != nil {
-			log.Fatal(err)
-		}
+	}
+	//docker+language:go&sort=stars&order=desc
+	query := querystring + "language:" + language + "&sort=stars&order=desc"
+	repos, err := repos.SearchRepos(query)
+	if err != nil {
+		return err
+	}
+	var report = template.Must(template.New("Repo Info").Funcs(template.FuncMap{"daysAgo": utils.DaysAgo}).Parse(templates.RepoInfo))
+	if err := report.Execute(os.Stdout, repos); err != nil {
+		log.Fatal(err)
 	}
 	return nil
 }

@@ -63,7 +63,6 @@ func GistDownload(id string) (err error) {
 		return errors.Wrap(err, "Could not able to create the file")
 	}
 	defer f.Close()
-
 	// Use MultiWriter so we can write to stdout and
 	// a file on the same operation
 	dest := io.MultiWriter(os.Stdout, f)

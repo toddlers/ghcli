@@ -27,7 +27,7 @@ Age:    {{.CreatedAt | daysAgo}} days
 {{end}}`
 
 	RepoInfo = `
-{{range .Items}}-------------------------------------------------------------------------
+{{range .}}-------------------------------------------------------------------------
 Owner :  {{.Owner.URL}}
 Repo Name : {{.FullName}}
 Repo URL :  {{.HTMLURL}}

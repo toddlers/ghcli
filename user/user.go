@@ -2,6 +2,7 @@ package user
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -27,4 +28,27 @@ func GetUser(name string) *models.User {
 		log.Fatalf("Error receving data: %s\n", err)
 	}
 	return &user
+}
+
+func GetStars(username string) ([]*models.Repo, error) {
+	url := config.APIURL + config.UserEndpoint + username + "/starred"
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("Accept", "application/vnd.github.v3.text-match+json")
+	resp, err := http.DefaultClient.Do(req)
+	if resp.StatusCode != http.StatusOK {
+		resp.Body.Close()
+		return nil, fmt.Errorf("query failed : %s", resp.Status)
+	}
+
+	var result []*models.Repo
+	defer resp.Body.Close()
+	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+		resp.Body.Close()
+		return nil, err
+	}
+	resp.Body.Close()
+	return result, nil
 }
