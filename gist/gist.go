@@ -1,10 +1,14 @@
 package gist
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
+	"os"
 
+	"github.com/pkg/errors"
 	"github.com/toddlers/ghcli/config"
 	"github.com/toddlers/ghcli/models"
 )
@@ -31,4 +35,42 @@ func GetGists(username string) ([]*models.Gist, error) {
 	}
 	resp.Body.Close()
 	return result, nil
+}
+
+func GistUpload(body string) (err error) {
+	client, err := models.NewGistClient()
+	if err != nil {
+		return errors.Wrap(err, "Failed to initialize gist client")
+	}
+	if err = client.UploadSnippet(body); err != nil {
+		return errors.Wrap(err, "Failed to upload snippet")
+	}
+	return nil
+}
+
+func GistDownload(id string) (err error) {
+	client, err := models.NewGistClient()
+	if err != nil {
+		return errors.Wrap(err, "Failed to initialize gist client")
+	}
+	snippet, err := client.GetSnippet(id)
+	if err != nil {
+		return errors.Wrap(err, "could not able to download the snippet")
+	}
+	fmt.Println("saving the file")
+	f, err := os.Create(snippet.Filename)
+	if err != nil {
+		return errors.Wrap(err, "Could not able to create the file")
+	}
+	defer f.Close()
+
+	// Use MultiWriter so we can write to stdout and
+	// a file on the same operation
+	dest := io.MultiWriter(os.Stdout, f)
+	io.Copy(dest, bytes.NewBufferString(snippet.Content))
+	//err = ioutil.WriteFile(snippet.Filename, []byte(snippet.Content), os.ModePerm)
+	// if err != nil {
+	// 	return errors.Wrap(err, "Could not able to save the file")
+	// }
+	return nil
 }

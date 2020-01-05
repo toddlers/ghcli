@@ -27,7 +27,6 @@ type Repo struct {
 	GitURL          string    `json:"git_url"`
 	SSHURL          string    `json:"ssh_url"`
 	CloneURL        string    `json:"clone_url"`
-	SvnURL          string    `json:"svn_url"`
 	Homepage        string    `json:"homepage"`
 	Size            int       `json:"size"`
 	StargazersCount int       `json:"stargazers_count"`
