@@ -11,13 +11,45 @@ import (
 	"github.com/google/go-github/github"
 	"github.com/pkg/errors"
 	"github.com/toddlers/ghcli/config"
-	"github.com/toddlers/ghcli/models"
+	"github.com/toddlers/ghcli/utils"
+	"golang.org/x/oauth2"
 )
 
+type Client interface {
+	DownloadSnippet(string) (*Snippet, error)
+	UploadSnippet(string) error
+	GetSnippets() ([]*github.Gist, error)
+}
+
+type GistClient struct {
+	Client *github.Client
+}
+
+func githubClient(accessToken string) *github.Client {
+	ts := oauth2.StaticTokenSource(
+		&oauth2.Token{AccessToken: accessToken},
+	)
+	tc := oauth2.NewClient(oauth2.NoContext, ts)
+	client := github.NewClient(tc)
+	return client
+
+}
+
+func NewGistClient() (Client, error) {
+	accessToken, err := utils.GetGithubAccessToken()
+	if err != nil {
+		return nil, fmt.Errorf(`access is not provided $%v`, config.GithubAccessToken)
+	}
+	client := GistClient{
+		Client: githubClient(accessToken),
+	}
+	return client, nil
+}
+
 func GetGists(username string) ([]*github.Gist, error) {
-	if os.Getenv(models.GithubAccessToken) != "" {
+	if os.Getenv(config.GithubAccessToken) != "" {
 		fmt.Println("Listing for Authenticated user")
-		client, err := models.NewGistClient()
+		client, err := NewGistClient()
 		gists, err := client.GetSnippets()
 		if err != nil {
 			return nil, errors.Wrapf(err, "Failed to fetch the gists")
@@ -47,7 +79,7 @@ func GetGists(username string) ([]*github.Gist, error) {
 }
 
 func GistUpload(body string) (err error) {
-	client, err := models.NewGistClient()
+	client, err := NewGistClient()
 	if err != nil {
 		return errors.Wrap(err, "Failed to initialize gist client")
 	}
@@ -58,7 +90,7 @@ func GistUpload(body string) (err error) {
 }
 
 func GistDownload(id string) (err error) {
-	client, err := models.NewGistClient()
+	client, err := NewGistClient()
 	if err != nil {
 		return errors.Wrap(err, "Failed to initialize gist client")
 	}

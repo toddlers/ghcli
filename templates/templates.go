@@ -4,7 +4,7 @@ const (
 	UserInfo = `Username: {{.Login}}
 Name: {{.Name}}
 Bio:   {{.Bio}}
-Location:  {{.Location | printf "%.64s"}}
+Location:  {{.Location }}
 Age:    {{.CreatedAt | daysAgo}} days
 Blog: {{.Blog}}
 Freshness: {{.UpdatedAt | daysAgo }} days
@@ -27,13 +27,12 @@ Age:    {{.CreatedAt | daysAgo}} days
 {{end}}`
 
 	RepoInfo = `
-{{range .}}-------------------------------------------------------------------------
+{{range .Items}}-------------------------------------------------------------------------
 Owner :  {{.Owner.URL}}
 Repo Name : {{.FullName}}
 Repo URL :  {{.HTMLURL}}
 Description :  {{.Description}}
-Watchers :  {{.Watchers}}
-Forks :  {{.Forks}}
+Forks :  {{.ForksCount}}
 Open Issues :  {{.OpenIssuesCount}}
 Created :           {{.CreatedAt}}
 Last Updated :              {{.UpdatedAt}}

@@ -7,11 +7,11 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/google/go-github/github"
 	"github.com/toddlers/ghcli/config"
-	"github.com/toddlers/ghcli/models"
 )
 
-func GetUser(name string) *models.User {
+func GetUser(name string) *github.User {
 	resp, err := http.Get(config.APIURL + config.UserEndpoint + name)
 	if err != nil {
 		log.Fatalf("Error receving data: %s\n", err)
@@ -22,7 +22,7 @@ func GetUser(name string) *models.User {
 	if err != nil {
 		log.Fatalf("Error receving data: %s\n", err)
 	}
-	var user models.User
+	var user github.User
 	err = json.Unmarshal(body, &user)
 	if err != nil {
 		log.Fatalf("Error receving data: %s\n", err)
@@ -30,7 +30,7 @@ func GetUser(name string) *models.User {
 	return &user
 }
 
-func GetStarredRepos(username string) ([]*models.Repo, error) {
+func GetStarredRepos(username string) ([]*github.Repository, error) {
 	url := config.APIURL + config.UserEndpoint + username + "/starred"
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
@@ -43,7 +43,7 @@ func GetStarredRepos(username string) ([]*models.Repo, error) {
 		return nil, fmt.Errorf("query failed : %s", resp.Status)
 	}
 
-	var result []*models.Repo
+	var result []*github.Repository
 	defer resp.Body.Close()
 	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
 		resp.Body.Close()

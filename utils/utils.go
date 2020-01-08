@@ -3,14 +3,17 @@ package utils
 import (
 	"errors"
 	"io"
+	"os"
 	"strings"
 	"time"
 
 	"github.com/chzyer/readline"
+	"github.com/google/go-github/github"
+	"github.com/toddlers/ghcli/config"
 )
 
-func DaysAgo(t time.Time) int {
-	return int(time.Since(t).Hours() / 24)
+func DaysAgo(t github.Timestamp) int {
+	return int(time.Since(t.Time).Hours() / 24)
 }
 
 func Scan(message string) (string, error) {
@@ -49,4 +52,13 @@ func Scan(message string) (string, error) {
 		return line, nil
 	}
 	return "", errors.New("Canceled")
+}
+
+func GetGithubAccessToken() (string, error) {
+	if config.Gc.AccessToken != "" {
+		return config.Gc.AccessToken, nil
+	} else if os.Getenv(config.GithubAccessToken) != "" {
+		return os.Getenv(config.GithubAccessToken), nil
+	}
+	return "", errors.New("Github AccessToken not found")
 }

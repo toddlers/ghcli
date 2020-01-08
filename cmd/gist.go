@@ -11,7 +11,6 @@ import (
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
 	"github.com/toddlers/ghcli/gist"
-	"github.com/toddlers/ghcli/models"
 	"github.com/toddlers/ghcli/templates"
 	"github.com/toddlers/ghcli/utils"
 )
@@ -77,7 +76,7 @@ func createGists(cmd *cobra.Command, args []string) (err error) {
 		}
 		tags = strings.Fields(t)
 	}
-	newSnippet := models.SnippetInfo{
+	newSnippet := gist.SnippetInfo{
 		Description: description,
 		Command:     command,
 		Tag:         tags,

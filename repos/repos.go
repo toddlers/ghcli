@@ -5,14 +5,18 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/google/go-github/github"
 	"github.com/toddlers/ghcli/config"
-	"github.com/toddlers/ghcli/models"
 )
 
-func SearchRepos(terms string) (*models.ReposSearchResult, error) {
+type ReposSearchResult struct {
+	TotalCount int `json:"total_count"`
+	Items      []*github.Repository
+}
+
+func SearchRepos(terms string) (*ReposSearchResult, error) {
 	//https://api.github.com/search/repositories?q=docker+language:go&sort=stars&order=desc
 	url := config.APIURL + config.SearchEndpoint + "repositories?q=" + terms
-	fmt.Println(url)
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return nil, err
@@ -23,13 +27,12 @@ func SearchRepos(terms string) (*models.ReposSearchResult, error) {
 		resp.Body.Close()
 		return nil, fmt.Errorf("search query failed : %s", resp.Status)
 	}
-	var result models.ReposSearchResult
+	var result ReposSearchResult
 	defer resp.Body.Close()
 	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
 		resp.Body.Close()
 		return nil, err
 	}
-	fmt.Println(result)
 	resp.Body.Close()
 	return &result, nil
 }
