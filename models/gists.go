@@ -13,31 +13,6 @@ import (
 	"golang.org/x/oauth2"
 )
 
-type File struct {
-	Filename string `json:"filename"`
-	Type     string `json:"type"`
-	Language string `json:"language"`
-	RawURL   string `json:"raw_url"`
-	Size     int    `json:"size"`
-}
-type Gist struct {
-	URL         string    `json:"url"`
-	ID          string    `json:"id"`
-	ForksURL    string    `json:"forks_url"`
-	CommitsURL  string    `json:"commits_url"`
-	GitPullURL  string    `json:"git_pull_url"`
-	GitPushURL  string    `json:"git_push_url"`
-	HTMLURL     string    `json:"html_url"`
-	Public      bool      `json:"public"`
-	CreatedAt   time.Time `json:"created_at"`
-	UpdatedAt   time.Time `json:"updated_at"`
-	Description string    `json:"description"`
-	Comments    int       `json:"comments"`
-	CommentsURL string    `json:"comments_url"`
-	Owner       *Owner
-	Files       map[string]File
-}
-
 type Snippets struct {
 	Snippets []SnippetInfo
 }
@@ -50,12 +25,13 @@ type SnippetInfo struct {
 }
 
 const (
-	githubAccessToken = "GITHUB_ACCESS_TOKEN"
+	GithubAccessToken = "GITHUB_ACCESS_TOKEN"
 )
 
 type Client interface {
-	GetSnippet(string) (*Snippet, error)
+	DownloadSnippet(string) (*Snippet, error)
 	UploadSnippet(string) error
+	GetSnippets() ([]*github.Gist, error)
 }
 
 // Snippet is the remote snippet
@@ -81,9 +57,9 @@ func githubClient(accessToken string) *github.Client {
 }
 
 func NewGistClient() (Client, error) {
-	accessToken, err := getGithubAccessToken()
+	accessToken, err := GetGithubAccessToken()
 	if err != nil {
-		return nil, fmt.Errorf(`access is not provided $%v`, githubAccessToken)
+		return nil, fmt.Errorf(`access is not provided $%v`, GithubAccessToken)
 	}
 	client := GistClient{
 		Client: githubClient(accessToken),
@@ -92,11 +68,11 @@ func NewGistClient() (Client, error) {
 	return client, nil
 }
 
-func getGithubAccessToken() (string, error) {
+func GetGithubAccessToken() (string, error) {
 	if config.Gc.AccessToken != "" {
 		return config.Gc.AccessToken, nil
-	} else if os.Getenv(githubAccessToken) != "" {
-		return os.Getenv(githubAccessToken), nil
+	} else if os.Getenv(GithubAccessToken) != "" {
+		return os.Getenv(GithubAccessToken), nil
 	}
 	return "", errors.New("Github AccessToken not found")
 }
@@ -121,7 +97,7 @@ func (g GistClient) UploadSnippet(content string) error {
 	return nil
 }
 
-func (g GistClient) GetSnippet(id string) (*Snippet, error) {
+func (g GistClient) DownloadSnippet(id string) (*Snippet, error) {
 	s := spinner.New(spinner.CharSets[14], 100*time.Millisecond)
 	s.Start()
 	s.Suffix = "Downloading Gist..."
@@ -146,6 +122,19 @@ func (g GistClient) GetSnippet(id string) (*Snippet, error) {
 	snippet.UpdatedAt = *gist.UpdatedAt
 
 	return &snippet, nil
+}
+
+func (g GistClient) GetSnippets() ([]*github.Gist, error) {
+	s := spinner.New(spinner.CharSets[14], 100*time.Millisecond)
+	s.Start()
+	s.Suffix = "Getting starred Gists..."
+	defer s.Stop()
+	gists, _, err := g.Client.Gists.ListStarred(context.Background(), nil)
+	if err != nil {
+		return nil, errors.Wrapf(err, "Failed to get the gists")
+	}
+	return gists, nil
+
 }
 
 func (g GistClient) createGist(ctx context.Context, gist *github.Gist) (gistID *string, err error) {

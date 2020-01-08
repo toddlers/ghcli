@@ -19,9 +19,9 @@ import (
 // gistCmd represents the gist command
 var gistCmd = &cobra.Command{
 	Use:   "gist",
-	Short: "gist fetch",
-	Long:  `show all public gists`,
-	RunE:  getGists,
+	Short: "gist list",
+	Long:  `list all public gists`,
+	RunE:  listGists,
 }
 
 var gistCreateCmd = &cobra.Command{
@@ -34,11 +34,11 @@ var gistCreateCmd = &cobra.Command{
 var gistDownloadCmd = &cobra.Command{
 	Use:   "download",
 	Short: "download gist",
-	Long:  `download a gist`,
+	Long:  `download a public gist`,
 	RunE:  downloadGist,
 }
 
-func getGists(cmd *cobra.Command, args []string) (err error) {
+func listGists(cmd *cobra.Command, args []string) (err error) {
 	if len(username) > 0 {
 		var report = template.Must(template.New("Gist Info").Funcs(template.FuncMap{"daysAgo": utils.DaysAgo}).Parse(templates.GistInfo))
 		snippets, err := gist.GetGists(username)
@@ -110,7 +110,6 @@ func init() {
 	gistDownloadCmd.Flags().StringVarP(&Gid, "gid", "i", "", "gist id to download")
 	gistCreateCmd.Flags().BoolVarP(&Tag, "tag", "t", false,
 		`Display tag prompt (delimiter: space)`)
-	//gistCreateCmd.Flags().StringVarP(&tag, "tag", "t", "", "tag for the gist")
 	gistCmd.AddCommand(gistCreateCmd)
 	gistCmd.AddCommand(gistDownloadCmd)
 	rootCmd.AddCommand(gistCmd)

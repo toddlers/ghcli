@@ -21,7 +21,7 @@ Github Handle: {{.Owner.Login}}
 Gist ID: {{.ID}}
 {{range .Files}}
 Filename:   {{.Filename}}
-Language:  {{.Language| printf "%.64s"}}
+Language:  {{.Language}}
 {{end}}
 Age:    {{.CreatedAt | daysAgo}} days
 {{end}}`

@@ -8,13 +8,22 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/google/go-github/github"
 	"github.com/pkg/errors"
 	"github.com/toddlers/ghcli/config"
 	"github.com/toddlers/ghcli/models"
 )
 
-func GetGists(username string) ([]*models.Gist, error) {
-	//https://api.github.com/users/toddlers/gists
+func GetGists(username string) ([]*github.Gist, error) {
+	if os.Getenv(models.GithubAccessToken) != "" {
+		fmt.Println("Listing for Authenticated user")
+		client, err := models.NewGistClient()
+		gists, err := client.GetSnippets()
+		if err != nil {
+			return nil, errors.Wrapf(err, "Failed to fetch the gists")
+		}
+		return gists, nil
+	}
 	url := config.APIURL + config.UserEndpoint + username + "/gists"
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
@@ -27,7 +36,7 @@ func GetGists(username string) ([]*models.Gist, error) {
 		return nil, fmt.Errorf("search query failed : %s", resp.Status)
 	}
 
-	var result []*models.Gist
+	var result []*github.Gist
 	defer resp.Body.Close()
 	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
 		resp.Body.Close()
@@ -53,7 +62,7 @@ func GistDownload(id string) (err error) {
 	if err != nil {
 		return errors.Wrap(err, "Failed to initialize gist client")
 	}
-	snippet, err := client.GetSnippet(id)
+	snippet, err := client.DownloadSnippet(id)
 	if err != nil {
 		return errors.Wrap(err, "could not able to download the snippet")
 	}
@@ -66,10 +75,9 @@ func GistDownload(id string) (err error) {
 	// Use MultiWriter so we can write to stdout and
 	// a file on the same operation
 	dest := io.MultiWriter(os.Stdout, f)
-	io.Copy(dest, bytes.NewBufferString(snippet.Content))
-	//err = ioutil.WriteFile(snippet.Filename, []byte(snippet.Content), os.ModePerm)
-	// if err != nil {
-	// 	return errors.Wrap(err, "Could not able to save the file")
-	// }
+	_, err = io.Copy(dest, bytes.NewBufferString(snippet.Content))
+	if err != nil {
+		return errors.Wrap(err, "Could not able to save the file")
+	}
 	return nil
 }

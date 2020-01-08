@@ -30,7 +30,7 @@ func GetUser(name string) *models.User {
 	return &user
 }
 
-func GetStars(username string) ([]*models.Repo, error) {
+func GetStarredRepos(username string) ([]*models.Repo, error) {
 	url := config.APIURL + config.UserEndpoint + username + "/starred"
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
