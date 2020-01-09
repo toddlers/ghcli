@@ -9,6 +9,7 @@ import (
 
 	"github.com/google/go-github/github"
 	"github.com/toddlers/ghcli/config"
+	"github.com/toddlers/ghcli/repos"
 )
 
 func GetUser(name string) *github.User {
@@ -30,7 +31,7 @@ func GetUser(name string) *github.User {
 	return &user
 }
 
-func GetStarredRepos(username string) ([]*github.Repository, error) {
+func GetStarredRepos(username string) (*repos.ReposSearchResult, error) {
 	url := config.APIURL + config.UserEndpoint + username + "/starred"
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
@@ -50,5 +51,5 @@ func GetStarredRepos(username string) ([]*github.Repository, error) {
 		return nil, err
 	}
 	resp.Body.Close()
-	return result, nil
+	return &repos.ReposSearchResult{Items: result}, nil
 }

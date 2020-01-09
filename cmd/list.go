@@ -17,26 +17,22 @@ import (
 var listCmd = &cobra.Command{
 	Use:   "list-stars",
 	Short: "list starred repositories",
-	Long: `list starred repositories by an authenticated user
-	        by default, for listing starred gists please use
-					the option "-g"`,
-	RunE: listStars,
+	Long:  `list starred repositories and gists by an authenticated user`,
+}
+var repoListCmd = &cobra.Command{
+	Use:   "repos",
+	Short: "list starred repositories",
+	Long:  `list starred repositories by an authenticated user`,
+	RunE:  repoListStars,
+}
+var gistsListCmd = &cobra.Command{
+	Use:   "gists",
+	Short: "list starred gists",
+	Long:  `list starred gists by an authenticated user`,
+	RunE:  gistListStars,
 }
 
-func listStars(cmd *cobra.Command, args []string) (err error) {
-	status, _ := cmd.Flags().GetBool("Gists")
-	if status {
-		fmt.Println("listing starred gists")
-		var report = template.Must(template.New("Gist Info").Funcs(template.FuncMap{"daysAgo": utils.DaysAgo}).Parse(templates.GistInfo))
-		snippets, err := gist.GetGists(username)
-		if err != nil {
-			return err
-		}
-		if err := report.Execute(os.Stdout, snippets); err != nil {
-			log.Fatal(err)
-		}
-		return nil
-	}
+func repoListStars(cmd *cobra.Command, args []string) (err error) {
 	if username != "" {
 		fmt.Println("listing starred repositories")
 		repos, err := user.GetStarredRepos(username)
@@ -53,8 +49,23 @@ func listStars(cmd *cobra.Command, args []string) (err error) {
 	return nil
 }
 
+func gistListStars(cmd *cobra.Command, args []string) (err error) {
+	fmt.Println("listing starred gists")
+	var report = template.Must(template.New("Gist Info").Funcs(template.FuncMap{"daysAgo": utils.DaysAgo}).Parse(templates.GistInfo))
+	snippets, err := gist.GetGists(username)
+	if err != nil {
+		return err
+	}
+	if err := report.Execute(os.Stdout, snippets); err != nil {
+		log.Fatal(err)
+	}
+	return nil
+}
+
 func init() {
 	rootCmd.AddCommand(listCmd)
-	listCmd.Flags().StringVarP(&username, "username", "u", "", `user's github handle`)
-	listCmd.Flags().BoolP("Gists", "g", false, "list starred gists")
+	listCmd.AddCommand(repoListCmd)
+	listCmd.AddCommand(gistsListCmd)
+	repoListCmd.Flags().StringVarP(&username, "username", "u", "", `user's github handle`)
+	gistsListCmd.Flags().StringVarP(&username, "username", "u", "", `user's github handle`)
 }

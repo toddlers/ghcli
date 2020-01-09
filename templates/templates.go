@@ -23,7 +23,6 @@ Gist ID: {{.ID}}
 Filename:   {{.Filename}}
 Language:  {{.Language}}
 {{end}}
-Age:    {{.CreatedAt | daysAgo}} days
 {{end}}`
 
 	RepoInfo = `
