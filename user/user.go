@@ -8,6 +8,7 @@ import (
 	"net/http"
 
 	"github.com/google/go-github/github"
+	"github.com/pkg/errors"
 	"github.com/toddlers/ghcli/config"
 	"github.com/toddlers/ghcli/repos"
 )
@@ -52,4 +53,24 @@ func GetStarredRepos(username string) (*repos.ReposSearchResult, error) {
 	}
 	resp.Body.Close()
 	return &repos.ReposSearchResult{Items: result}, nil
+}
+
+func GetZen() ([]byte, error) {
+	url := config.APIURL + "/zen"
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("Accept", "application/vnd.github.v3.text-match+json")
+	resp, err := http.DefaultClient.Do(req)
+	if resp.StatusCode != http.StatusOK {
+		resp.Body.Close()
+		return nil, fmt.Errorf("query failed : %s", resp.Status)
+	}
+	defer resp.Body.Close()
+	bodyBytes, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, errors.Wrapf(err, "Can't read from the body")
+	}
+	return bodyBytes, nil
 }
