@@ -17,19 +17,21 @@ var searchCmd = &cobra.Command{
 	Use:   "search",
 	Short: "search github",
 	Long:  `search github for various information`,
-	RunE:  search,
+}
+var repoSearchCmd = &cobra.Command{
+	Use:   "repo",
+	Short: "search repo",
+	Long:  `search repo on github for various information`,
+	RunE:  repoSearch,
+}
+var userSearchCmd = &cobra.Command{
+	Use:   "user",
+	Short: "search user",
+	Long:  `search user on github for various information`,
+	RunE:  userSearch,
 }
 
-func search(cmd *cobra.Command, args []string) (err error) {
-	if username != "" {
-		userInfo := user.GetUser(username)
-
-		var report = template.Must(template.New("User Info").Funcs(template.FuncMap{"daysAgo": utils.DaysAgo}).Parse(templates.UserInfo))
-		if err := report.Execute(os.Stdout, userInfo); err != nil {
-			log.Fatal(err)
-		}
-		return nil
-	}
+func repoSearch(cmd *cobra.Command, args []string) (err error) {
 	//docker+language:go&sort=stars&order=desc
 	query := querystring + "language:" + language + "&sort=stars&order=desc"
 	repos, err := repos.SearchRepos(query)
@@ -43,9 +45,24 @@ func search(cmd *cobra.Command, args []string) (err error) {
 	return nil
 }
 
+func userSearch(cmd *cobra.Command, args []string) (err error) {
+	if username != "" {
+		userInfo := user.GetUser(username)
+
+		var report = template.Must(template.New("User Info").Funcs(template.FuncMap{"daysAgo": utils.DaysAgo}).Parse(templates.UserInfo))
+		if err := report.Execute(os.Stdout, userInfo); err != nil {
+			log.Fatal(err)
+		}
+		return nil
+	}
+	return nil
+}
+
 func init() {
 	rootCmd.AddCommand(searchCmd)
-	searchCmd.Flags().StringVarP(&username, "username", "u", "", `user's github handle`)
-	searchCmd.Flags().StringVarP(&querystring, "query", "q", "", `string to search`)
-	searchCmd.Flags().StringVarP(&language, "language", "l", "", `language project written in`)
+	searchCmd.AddCommand(repoSearchCmd)
+	searchCmd.AddCommand(userSearchCmd)
+	userSearchCmd.Flags().StringVarP(&username, "username", "u", "", `user's github handle`)
+	repoSearchCmd.Flags().StringVarP(&querystring, "query", "q", "", `string to search`)
+	repoSearchCmd.Flags().StringVarP(&language, "language", "l", "", `language project written in`)
 }
